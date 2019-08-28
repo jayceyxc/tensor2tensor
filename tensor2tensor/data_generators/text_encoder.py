@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -924,7 +924,7 @@ class SubwordTextEncoder(TextEncoder):
     """
     subtoken_strings = []
     for line in f:
-      s = line.strip()
+      s = line.rstrip()
       # Some vocab files wrap words in single quotes, but others don't
       if ((s.startswith("'") and s.endswith("'")) or
           (s.startswith("\"") and s.endswith("\""))):

@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,9 +79,6 @@ class VideoBairRobotPushing(video_utils.VideoProblem):
   def random_skip(self):
     return False
 
-  def eval_metrics(self):
-    return []
-
   @property
   def only_keep_videos_from_0th_frame(self):
     return True
@@ -112,8 +109,8 @@ class VideoBairRobotPushing(video_utils.VideoProblem):
 
   def hparams(self, defaults, unused_model_hparams):
     p = defaults
-    p.modality = {"inputs": modalities.VideoModality,
-                  "targets": modalities.VideoModality}
+    p.modality = {"inputs": modalities.ModalityType.VIDEO,
+                  "targets": modalities.ModalityType.VIDEO}
     p.vocab_size = {"inputs": 256,
                     "targets": 256}
 

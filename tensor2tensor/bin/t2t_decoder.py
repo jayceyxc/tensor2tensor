@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,6 +58,8 @@ flags.DEFINE_integer("decode_shards", 1, "Number of decoding replicas.")
 flags.DEFINE_string("score_file", "", "File to score. Each line in the file "
                     "must be in the format input \t target.")
 flags.DEFINE_bool("decode_in_memory", False, "Decode in memory.")
+flags.DEFINE_bool("disable_grappler_optimizations", False,
+                  "Disable Grappler if need be to avoid tensor format errors.")
 
 
 def create_hparams():
@@ -100,7 +102,8 @@ def decode(estimator, hparams, decode_hp):
         hparams,
         decode_hp,
         decode_to_file=FLAGS.decode_to_file,
-        dataset_split="test" if FLAGS.eval_use_test_set else None)
+        dataset_split="test" if FLAGS.eval_use_test_set else None,
+        checkpoint_path=FLAGS.checkpoint_path)
 
 
 def score_file(filename):
@@ -128,8 +131,11 @@ def score_file(filename):
 
   with tf.Session() as sess:
     # Load weights from checkpoint.
-    ckpts = tf.train.get_checkpoint_state(FLAGS.output_dir)
-    ckpt = ckpts.model_checkpoint_path
+    if FLAGS.checkpoint_path is None:
+      ckpts = tf.train.get_checkpoint_state(FLAGS.output_dir)
+      ckpt = ckpts.model_checkpoint_path
+    else:
+      ckpt = FLAGS.checkpoint_path
     saver.restore(sess, ckpt)
     # Run on each line.
     with tf.gfile.Open(filename) as f:
@@ -181,11 +187,18 @@ def main(_):
 
   hp = create_hparams()
   decode_hp = create_decode_hparams()
+  run_config = t2t_trainer.create_run_config(hp)
+  if FLAGS.disable_grappler_optimizations:
+    run_config.session_config.graph_options.rewrite_options.disable_meta_optimizer = True
+
+  # summary-hook in tf.estimator.EstimatorSpec requires
+  # hparams.model_dir to be set.
+  hp.add_hparam("model_dir", run_config.model_dir)
 
   estimator = trainer_lib.create_estimator(
       FLAGS.model,
       hp,
-      t2t_trainer.create_run_config(hp),
+      run_config,
       decode_hparams=decode_hp,
       use_tpu=FLAGS.use_tpu)
 

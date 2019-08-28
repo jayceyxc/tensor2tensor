@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,55 +35,10 @@ import tensorflow as tf
 FLAGS = tf.flags.FLAGS
 
 CONSOLE_URL = "https://console.cloud.google.com/mlengine/jobs/"
-RUNTIME_VERSION = "1.12"
-
-
-class Gcloud(object):
-  """gcloud command strings."""
-  # Note these can be modified by set_versions
-  VM_VERSION = "tf-1-12"
-  TPU_VERSION = "1.12"
-
-  @classmethod
-  def set_versions(cls, vm, tpu):
-    cls.VM_VERSION = vm
-    cls.TPU_VERSION = tpu
-
-  @classmethod
-  def create_vm(cls):
-    create_vm_str = """
-    gcloud compute instances create {name} \
-      --machine-type=n1-standard-8 \
-      --image-family=%s \
-      --image-project=ml-images \
-      --scopes=https://www.googleapis.com/auth/cloud-platform
-    """ % cls.VM_VERSION
-    return create_vm_str
-
-  DELETE_VM = "gcloud compute instances delete {name} --quiet"
-
-  @classmethod
-  def create_tpu(cls):
-    create_tpu_str = """
-    gcloud beta compute tpus create \
-      {name} \
-      --range={tpu_ip}/29 \
-      --version=%s
-    """ % cls.TPU_VERSION
-    return create_tpu_str
-
-  DELETE_TPU = "gcloud beta compute tpus delete {name} --quiet"
-
-  LIST_TPU = "gcloud beta compute tpus list"
-  LIST_VM = "gcloud compute instances list"
-
-  SSH_LOCAL_PORT_FORWARD = "-L {local_port}:{host}:{remote_port}"
-  SSH_TUNNEL = """
-  gcloud compute ssh {name} -- -N
-  """
-
-  DEFAULT_PROJECT = "gcloud config get-value project"
-  DEFAULT_REGION = "gcloud config get-value compute/region"
+RUNTIME_VERSION = "1.13"
+LIST_VM = "gcloud compute instances list"
+DEFAULT_PROJECT = "gcloud config get-value project"
+DEFAULT_REGION = "gcloud config get-value compute/region"
 
 
 def shell_output(cmd_, **kwargs):
@@ -99,11 +54,11 @@ def format_cmd(cmd_, **kwargs):
 
 
 def default_region():
-  return shell_output(Gcloud.DEFAULT_REGION).strip()
+  return shell_output(DEFAULT_REGION).strip()
 
 
 def default_project():
-  return shell_output(Gcloud.DEFAULT_PROJECT).strip()
+  return shell_output(DEFAULT_PROJECT).strip()
 
 
 def get_setup_file(name, packages=None):
@@ -390,3 +345,7 @@ def launch():
   launch_job(job_spec)
   tf.logging.info("Launched %s. See console to track: %s.", job_name,
                   CONSOLE_URL)
+  tf.logging.info("Interact with the training job from the command line:")
+  tf.logging.info("Abort job: gcloud ml-engine jobs cancel %s", job_name)
+  tf.logging.info("Stream logs: gcloud ml-engine jobs stream-logs %s", job_name)
+  tf.logging.info("Open tensorboard: tensorboard --logdir %s", train_dir)

@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,8 +74,8 @@ class TicTacToeEnvTest(tf.test.TestCase):
 
     we_won = reward == 1
     env_won = reward == -1
-    no_space = bool(ttt_env.get_open_spaces(ttt.board_state))
-    self.assertTrue(we_won or env_won or no_space)
+    space = bool(ttt_env.get_open_spaces(ttt.board_state))
+    self.assertTrue(we_won or env_won or not space)
 
 
 if __name__ == '__main__':

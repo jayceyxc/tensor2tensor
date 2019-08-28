@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,11 +51,13 @@ class VqaAttentionBaseline(t2t_model.T2TModel):
 
   def body(self, features):
     hp = self.hparams
-    # pylint: disable=eval-used
+    model_fn = resnet_v1_152
+    if hp.image_model_fn != "resnet_v1_152":
+      model_fn = eval(hp.image_model_fn)  # pylint: disable=eval-used
     if hp.image_input_type == "image":
       image_feat = vqa_layers.image_embedding(
           features["inputs"],
-          model_fn=eval(hp.image_model_fn),
+          model_fn=model_fn,
           trainable=hp.train_resnet,
           is_training=hp.mode == tf.estimator.ModeKeys.TRAIN)
     else:
@@ -335,7 +337,7 @@ def vqa_attention_base():
   hparams = common_hparams.basic_params1()
   hparams.batch_size = 128
   hparams.use_fixed_batch_size = True,
-  hparams.optimizer = "Adam"
+  hparams.optimizer = "adam"
   hparams.optimizer_adam_beta1 = 0.9
   hparams.optimizer_adam_beta2 = 0.999
   hparams.optimizer_adam_epsilon = 1e-8

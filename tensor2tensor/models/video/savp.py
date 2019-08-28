@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Tensor2Tensor Authors.
+# Copyright 2019 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,9 @@ from tensor2tensor.utils import registry
 from tensor2tensor.utils import update_ops_hook
 
 import tensorflow as tf
+import tensorflow_gan as tfgan
 
-gan_losses = tf.contrib.gan.losses.wargs
+gan_losses = tfgan.losses.wargs
 
 
 class NextFrameSavpBase(object):
